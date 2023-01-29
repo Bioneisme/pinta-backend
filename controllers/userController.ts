@@ -1,98 +1,137 @@
 import logger from "../config/logger";
 import {DI} from "../index";
-import {generateJWT, verifyJWT} from "../helpers/jwt";
-import {Request, Response} from "express";
+import {NextFunction, Request, Response} from "express";
 import {UserRequest} from "../types";
-import bcryptjs from "bcryptjs";
-import {Users} from "../entities";
+import {Tokens, Users} from "../entities";
+import {generateRandomCode} from "../utils/generateRandomCode";
+import axios from "axios";
+import {BOT_TOKEN, CHAT_ID, EXPIRY_TIME} from "../config/settings";
+import {redis} from "../utils/cache";
+import moment from "moment";
+import tokenService from "../services/tokenService";
 
 class UserController {
-    async register(req: Request, res: Response) {
+    async sendCode(req: Request, res: Response, next: NextFunction) {
         try {
-            // const {phone} = req.body;
-            //
-            // if (!email || !password) {
-            //     res.status(400).json({error: true, message: "Missing email or password"});
-            //     return;
-            // }
-            //
-            // const existingUser = await DI.em.findOne(Users, {phone});
-            //
-            // if (existingUser) {
-            //     res.status(400).json({error: true, message: "User already exists"});
-            //     return;
-            // }
-            //
-            // const slat = bcryptjs.genSaltSync(10);
-            // const hashedPassword = await bcryptjs.hash(password, slat);
-            //
-            // const user = DI.em.create(Users, {
-            //     email,
-            //     password: hashedPassword,
-            //     full_name,
-            //     date_of_birth,
-            //     region,
-            //     city,
-            //     specialization
-            // });
-            //
-            // await DI.em.persistAndFlush(user);
-            //
-            // if (!user) {
-            //     res.status(500).json({error: true, message: "Something went wrong"});
-            //     return;
-            // }
-            //
-            // res.status(201).send({...user, token: generateJWT(user.id)});
+            const {phone} = req.body;
+            const code = generateRandomCode(1000, 9999);
+
+            axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                chat_id: CHAT_ID,
+                text: `Номер телефона: *${phone}*\nКод: *${code}*\nДата: *${new Date().toLocaleString()}*\n` +
+                    `Expires: *${EXPIRY_TIME}s* (${moment().add(EXPIRY_TIME, 'seconds').format("HH:mm:ss DD.MM.YYYY")})`,
+                parse_mode: "Markdown"
+            }).then(result => {
+                res.json({error: false, message: "code_sent", result: result.data});
+                redis.setEx(phone, EXPIRY_TIME, code.toString());
+                return next();
+            }).catch(e => {
+                res.status(400).json({error: true, message: e});
+                return next();
+            });
         } catch (e) {
-            logger.error(`Register: ${e}`);
+            logger.error(`SendCode: ${e}`);
+            res.status(400).json({error: true, message: e});
+            next();
         }
     }
 
-    async login(req: Request, res: Response) {
+    async checkCode(req: Request, res: Response, next: NextFunction) {
         try {
-            // const {email, password} = req.body;
-            //
-            // if (!email || !password) {
-            //     res.status(400).json({error: true, message: "Missing email or password"});
-            //     return;
-            // }
-            //
-            // const user = await DI.em.findOne(Users, {email});
-            //
-            // if (!user) {
-            //     res.status(400).json({error: true, message: "User not found"});
-            //     return;
-            // }
-            //
-            // const isPasswordValid = await bcryptjs.compare(password, user.password);
-            //
-            // if (!isPasswordValid) {
-            //     res.status(400).json({error: true, message: "Invalid password"});
-            //     return;
-            // }
-            //
-            // res.status(200).send({...(user), token: generateJWT(user.id)});
+            const {phone, code} = req.body;
+            redis.get(phone).then(async result => {
+                if (!result) {
+                    res.status(400).json({error: true, message: "code_not_found_or_expired"});
+                    return next();
+                }
+                if (result === code) {
+                    let user = await DI.em.findOne(Users, {phone});
+                    if (!user) {
+                        user = DI.em.create(Users, {phone});
+                        await DI.em.persistAndFlush(user);
+                    }
+                    const tokens = tokenService.generateTokens(user.id);
+                    await tokenService.saveToken(user.id, tokens.refreshToken);
+
+                    res.cookie("refreshToken", tokens.refreshToken, {
+                        maxAge: 30 * 24 * 60 * 60 * 1000,
+                        httpOnly: true
+                    });
+                    res.json({error: false, message: "code_valid", ...tokens, user});
+                    await redis.del(phone);
+                    return next();
+                }
+
+                res.status(400).json({error: true, message: "code_invalid"});
+                return next()
+            }).catch(e => {
+                res.status(400).json({error: true, message: e});
+                return next();
+            });
         } catch (e) {
-            logger.error(`Login: ${e}`);
+            logger.error(`CheckCode: ${e}`);
+            res.status(400).json({error: true, message: e});
+            next();
         }
     }
 
-
-    async validate(req: Request, res: Response) {
+    async logout(req: Request, res: Response, next: NextFunction) {
         try {
-            const {token} = req.body;
-            const decoded = verifyJWT(token);
-
-            const id: number = (decoded as { id: number }).id;
-
-            const user = await DI.em.findOne(Users, {id});
-            if (!user) return res.status(400).json({error: true, message: "User not found"});
-            (req as UserRequest).user = user;
-
-            return res.status(200).json({...(user), token: generateJWT(user.id)});
+            const {refreshToken} = req.cookies;
+            await tokenService.removeToken(refreshToken);
+            res.clearCookie("refreshToken");
+            res.json({error: false, message: "logout_success"});
+            return next();
         } catch (e) {
-            logger.error(`getCurrentUser: ${e}`);
+            logger.error(`logout: ${e}`);
+            res.status(400).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async refresh(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {refreshToken} = req.cookies;
+            if (!refreshToken) {
+                res.status(401).json({error: true, message: "Unauthorized"});
+                return next();
+            }
+            const userData: any = tokenService.verifyRefreshToken(refreshToken);
+            const token = await DI.em.findOne(Tokens, {token: refreshToken});
+            if (!token || !userData) {
+                res.status(401).json({error: true, message: "Unauthorized"});
+                return next();
+            }
+            const user = await DI.em.findOne(Users, {id: userData.id});
+            if (user) {
+                const tokens = tokenService.generateTokens(user.id);
+                await tokenService.saveToken(user.id, tokens.refreshToken);
+                res.cookie("refreshToken", tokens.refreshToken, {
+                    maxAge: 30 * 24 * 60 * 60 * 1000,
+                    httpOnly: true
+                });
+                res.json({error: false, message: "refresh_success", ...tokens, user});
+                return next();
+            }
+
+            res.status(401).json({error: true, message: "Unauthorized"});
+            return next();
+        } catch (e) {
+            logger.error(`refresh: ${e}`);
+            res.status(400).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async getMe(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {user} = req as UserRequest;
+            res.json({error: false, message: "get_me_success", user});
+            return next();
+        } catch (e) {
+            logger.error(`getMe: ${e}`);
+            res.status(400).json({error: true, message: e});
+            next();
         }
     }
 }
