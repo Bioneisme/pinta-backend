@@ -19,3 +19,14 @@ CREATE TABLE IF NOT EXISTS tokens
     ON DELETE NO ACTION
     NOT VALID
 );
+
+CREATE TABLE IF NOT EXISTS relationships (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user1_id integer NOT NULL,
+    user2_id integer NOT NULL,
+    status smallint NOT NULL,
+    created_at character varying(50) NOT NULL,
+    updated_at character varying(50) NOT NULL,
+    FOREIGN KEY (user1_id) REFERENCES users(id),
+    FOREIGN KEY (user2_id) REFERENCES users(id)
+);

@@ -21,8 +21,8 @@ class UserController {
                 text: `Номер телефона: *${phone}*\nКод: *${code}*\nДата: *${new Date().toLocaleString()}*\n` +
                     `Expires: *${EXPIRY_TIME}s* (${moment().add(EXPIRY_TIME, 'seconds').format("HH:mm:ss DD.MM.YYYY")})`,
                 parse_mode: "Markdown"
-            }).then(result => {
-                res.json({error: false, message: "code_sent", result: result.data});
+            }).then(() => {
+                res.json({error: false, message: "code_sent"});
                 redis.setEx(phone, EXPIRY_TIME, code.toString());
                 return next();
             }).catch(e => {
