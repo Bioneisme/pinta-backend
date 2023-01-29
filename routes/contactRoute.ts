@@ -6,7 +6,9 @@ import contactController from "../controllers/contactController";
 
 const router: Router = Router();
 
-router.post("/addContact", authMiddleware, contactController.addContact);
+router.post("/sendInvite", authMiddleware, contactController.sendInvite);
+router.post("/acceptInvite", authMiddleware, contactController.acceptInvite);
+router.post("/rejectInvite", authMiddleware, contactController.rejectInvite);
 router.get("/getContacts", authMiddleware, contactController.getContacts);
 
 export default router;
