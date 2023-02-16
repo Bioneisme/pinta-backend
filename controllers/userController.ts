@@ -9,6 +9,7 @@ import {BOT_TOKEN, CHAT_ID, EXPIRY_TIME} from "../config/settings";
 import {redis} from "../utils/cache";
 import moment from "moment";
 import tokenService from "../services/tokenService";
+import {wrap} from "@mikro-orm/core";
 
 class UserController {
     async sendCode(req: Request, res: Response, next: NextFunction) {
@@ -42,9 +43,13 @@ class UserController {
 
     async checkCode(req: Request, res: Response, next: NextFunction) {
         try {
-            const {phone, code} = req.body;
+            const {phone, code, deviceToken} = req.body;
             if (!phone || !code) {
                 res.status(400).json({error: true, message: "phone_or_code_not_found"});
+                return next();
+            }
+            if (!deviceToken) {
+                res.status(400).json({error: true, message: "device_token_not_found"});
                 return next();
             }
             redis.get(phone).then(async result => {
@@ -55,9 +60,11 @@ class UserController {
                 if (result === code) {
                     let user = await DI.em.findOne(Users, {phone});
                     if (!user) {
-                        user = DI.em.create(Users, {phone});
-                        await DI.em.persistAndFlush(user);
+                        user = DI.em.create(Users, {phone, deviceToken});
                     }
+                    wrap(user).assign({deviceToken});
+                    await DI.em.persistAndFlush(user);
+
                     const tokens = tokenService.generateTokens(user.id);
                     await tokenService.saveToken(user.id, tokens.refreshToken);
 
