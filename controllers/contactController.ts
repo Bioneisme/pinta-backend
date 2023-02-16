@@ -30,6 +30,22 @@ class ContactController {
         }
     }
 
+    async getInvites(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = (req as UserRequest).user;
+            const relationships = await DI.em.find(Relationships, {
+                user2: user,
+                status: ContactStatus.pending
+            });
+            res.json({error: false, message: "invites_found", relationships});
+            return next();
+        } catch (e) {
+            logger.error(`getInvites: ${e}`);
+            res.status(400).json({error: true, message: e});
+            next(e);
+        }
+    }
+
     async acceptInvite(req: Request, res: Response, next: NextFunction) {
         try {
             const {phone} = req.body;
