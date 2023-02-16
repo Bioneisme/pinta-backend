@@ -21,7 +21,8 @@ const logger = createLogger({
         }),
         new TelegramLogger({
             token: BOT_TOKEN,
-            chatId: +LOGS_CHAT_ID
+            chatId: +LOGS_CHAT_ID,
+            batchingDelay: 1000
         })
     ]
 });
