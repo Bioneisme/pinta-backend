@@ -20,7 +20,7 @@ export default async function (req: Request, res: Response, next: NextFunction) 
                 const id: number = decoded.id;
 
                 const user = await DI.em.findOne(Users, {id});
-                if (!user) return res.status(400).json({error: true, message: "user_not_found"});
+                if (!user) return res.status(404).json({error: true, message: "user_not_found"});
                 (req as UserRequest).user = user;
 
                 next();
