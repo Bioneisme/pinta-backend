@@ -34,7 +34,8 @@
     "redis": "^4.6.2",
     "telesignsdk": "^2.2.3",
     "ts-node": "^10.7.0",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "winston-telegram": "^2.6.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.15",

@@ -20,6 +20,7 @@ export const JWT_REFRESH_SECRET: string = process.env.JWT_REFRESH_SECRET || DEFA
 export const CLIENT_URL: string = process.env.CLIENT_URL || DEFAULT_CLIENT_URL;
 export const BOT_TOKEN: string = process.env.BOT_TOKEN as string;
 export const CHAT_ID: string = process.env.CHAT_ID as string;
+export const LOGS_CHAT_ID: string = process.env.LOGS_CHAT_ID as string;
 export const EXPIRY_TIME: number = +(process.env.EXPIRY_TIME || DEFAULT_EXPIRY_TIME);
 const REDIS_HOST: string = process.env.REDIS_HOST || DEFAULT_REDIS_HOST;
 const REDIS_PORT: string = process.env.REDIS_PORT || DEFAULT_REDIS_PORT;

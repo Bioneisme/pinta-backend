@@ -1,5 +1,7 @@
 import moment from "moment";
 import {createLogger, transports, format} from "winston";
+import TelegramLogger from "winston-telegram";
+import {BOT_TOKEN, LOGS_CHAT_ID} from "./settings";
 
 
 const formatter = format((info) => {
@@ -16,6 +18,10 @@ const logger = createLogger({
                 formatter,
                 format.simple()
             )
+        }),
+        new TelegramLogger({
+            token: BOT_TOKEN,
+            chatId: +LOGS_CHAT_ID
         })
     ]
 });
