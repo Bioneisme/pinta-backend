@@ -24,9 +24,20 @@ export const EXPIRY_TIME: number = +(process.env.EXPIRY_TIME || DEFAULT_EXPIRY_T
 const REDIS_HOST: string = process.env.REDIS_HOST || DEFAULT_REDIS_HOST;
 const REDIS_PORT: string = process.env.REDIS_PORT || DEFAULT_REDIS_PORT;
 const REDIS_PASSWORD: string = process.env.REDIS_PASSWORD || DEFAULT_REDIS_PASSWORD;
+const AWS_BUCKET_NAME: string = process.env.AWS_BUCKET_NAME as string;
+const AWS_BUCKET_REGION: string = process.env.AWS_BUCKET_REGION as string;
+const AWS_ACCESS_KEY_ID: string = process.env.AWS_ACCESS_KEY_ID as string;
+const AWS_ACCESS_KEY_SECRET: string = process.env.AWS_ACCESS_KEY_SECRET as string;
 
 export const REDIS = {
     host: REDIS_HOST,
     port: REDIS_PORT,
     password: REDIS_PASSWORD
+}
+
+export const AWS = {
+    region: AWS_BUCKET_REGION,
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_ACCESS_KEY_SECRET,
+    bucketName: AWS_BUCKET_NAME
 }

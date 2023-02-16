@@ -9,6 +9,7 @@ import express, {Application} from "express";
 import {EntityManager, MikroORM} from "@mikro-orm/core";
 import {writeDateLogging, logging} from "./middlewares/loggingMiddleware";
 import {init_cache} from "./utils/cache";
+import noteRoute from "./routes/noteRoute";
 
 const app: Application = express();
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use(writeDateLogging);
 app.use("/api/users", usersRoute);
 app.use("/api/contacts", contactRoute);
+app.use("/api/notes", noteRoute);
 app.use(logging);
 
 app.listen(SERVER_PORT, async () => {

@@ -14,6 +14,10 @@ class UserController {
     async sendCode(req: Request, res: Response, next: NextFunction) {
         try {
             const {phone} = req.body;
+            if (!phone) {
+                res.status(400).json({error: true, message: "phone_not_found"});
+                return next();
+            }
             const code = generateRandomCode(1000, 9999);
 
             axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -39,6 +43,10 @@ class UserController {
     async checkCode(req: Request, res: Response, next: NextFunction) {
         try {
             const {phone, code} = req.body;
+            if (!phone || !code) {
+                res.status(400).json({error: true, message: "phone_or_code_not_found"});
+                return next();
+            }
             redis.get(phone).then(async result => {
                 if (!result) {
                     res.status(400).json({error: true, message: "code_not_found_or_expired"});
@@ -93,13 +101,13 @@ class UserController {
         try {
             const {refreshToken} = req.cookies;
             if (!refreshToken) {
-                res.status(401).json({error: true, message: "Unauthorized"});
+                res.status(401).json({error: true, message: "unauthorized"});
                 return next();
             }
             const userData: any = tokenService.verifyRefreshToken(refreshToken);
             const token = await DI.em.findOne(Tokens, {token: refreshToken});
             if (!token || !userData) {
-                res.status(401).json({error: true, message: "Unauthorized"});
+                res.status(401).json({error: true, message: "unauthorized"});
                 return next();
             }
             const user = await DI.em.findOne(Users, {id: userData.id});
@@ -114,7 +122,7 @@ class UserController {
                 return next();
             }
 
-            res.status(401).json({error: true, message: "Unauthorized"});
+            res.status(401).json({error: true, message: "unauthorized"});
             return next();
         } catch (e) {
             logger.error(`refresh: ${e}`);
