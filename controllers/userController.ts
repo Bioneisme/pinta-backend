@@ -58,7 +58,7 @@ class UserController {
                     if (!user) {
                         user = DI.em.create(Users, {phone, deviceToken, name});
                     }
-                    wrap(user).assign({deviceToken});
+                    wrap(user).assign({deviceToken, name});
                     await DI.em.persistAndFlush(user);
 
                     const tokens = tokenService.generateTokens(user.id);
