@@ -29,6 +29,10 @@ const AWS_BUCKET_NAME: string = process.env.AWS_BUCKET_NAME as string;
 const AWS_BUCKET_REGION: string = process.env.AWS_BUCKET_REGION as string;
 const AWS_ACCESS_KEY_ID: string = process.env.AWS_ACCESS_KEY_ID as string;
 const AWS_ACCESS_KEY_SECRET: string = process.env.AWS_ACCESS_KEY_SECRET as string;
+const APN_KEY_ID: string = process.env.APN_KEY_ID as string;
+const APN_TEAM_ID: string = process.env.APN_TEAM_ID as string;
+const APN_KEY: string = process.env.APN_KEY as string;
+const BUNDLE_ID: string = process.env.BUNDLE_ID as string;
 
 export const REDIS = {
     host: REDIS_HOST,
@@ -41,4 +45,11 @@ export const AWS = {
     accessKeyId: AWS_ACCESS_KEY_ID,
     secretAccessKey: AWS_ACCESS_KEY_SECRET,
     bucketName: AWS_BUCKET_NAME
+}
+
+export const APN = {
+    keyId: APN_KEY_ID,
+    teamId: APN_TEAM_ID,
+    key: APN_KEY,
+    bundleId: BUNDLE_ID
 }

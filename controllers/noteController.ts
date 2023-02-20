@@ -1,7 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import logger from "../config/logger";
 import awsService from "../services/awsService";
-import multer from "multer";
 import * as util from "util";
 import * as fs from "fs";
 import {DI} from "../index";
@@ -46,21 +45,20 @@ class NoteController {
             return next();
         } catch (e) {
             logger.error(`createNote: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next();
         }
     }
 
     async getNote(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log(req.params)
             const key = req.params.key
             const readStream = awsService.getFileStream(key);
 
             readStream.pipe(res)
         } catch (e) {
             logger.error(`getNote: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next();
         }
     }

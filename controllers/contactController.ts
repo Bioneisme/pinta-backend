@@ -3,6 +3,7 @@ import logger from "../config/logger";
 import {ContactStatus, UserRequest} from "../types";
 import {DI} from "../index";
 import {Relationships, Users} from "../entities";
+import apnService from "../services/apnService";
 
 class ContactController {
     async sendInvite(req: Request, res: Response, next: NextFunction) {
@@ -17,7 +18,13 @@ class ContactController {
                     status: ContactStatus.pending
                 });
                 await DI.em.persistAndFlush(relationship);
-                res.status(201).json({error: false, message: "invite_sent", relationship});
+                const result = await apnService.sendNotification(contact.deviceToken, "Вам поступило новое приглашение в контакты");
+                if (!result.error) {
+                    res.status(201).json({error: false, message: ["invite_sent", "notification_sent"], relationship});
+                } else {
+                    res.status(201).json({error: false, message: "invite_sent", relationship});
+                }
+
                 return next();
             }
 
@@ -25,7 +32,7 @@ class ContactController {
             return next();
         } catch (e) {
             logger.error(`sendInvite: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next(e);
         }
     }
@@ -41,7 +48,7 @@ class ContactController {
             return next();
         } catch (e) {
             logger.error(`getInvites: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next(e);
         }
     }
@@ -67,7 +74,7 @@ class ContactController {
             return next();
         } catch (e) {
             logger.error(`acceptInvite: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next(e);
         }
     }
@@ -93,7 +100,7 @@ class ContactController {
             return next();
         } catch (e) {
             logger.error(`rejectInvite: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next(e);
         }
     }
@@ -109,7 +116,7 @@ class ContactController {
             return next();
         } catch (e) {
             logger.error(`getContacts: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next(e);
         }
     }

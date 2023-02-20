@@ -20,6 +20,7 @@
     "@types/jsonwebtoken": "^8.5.8",
     "@types/multer": "^1.4.7",
     "@types/node": "^17.0.23",
+    "apn": "^2.2.0",
     "aws-sdk": "^2.1300.0",
     "axios": "^1.2.4",
     "bcryptjs": "^2.4.3",

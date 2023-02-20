@@ -36,7 +36,7 @@ class UserController {
             });
         } catch (e) {
             logger.error(`SendCode: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next();
         }
     }
@@ -85,7 +85,7 @@ class UserController {
             });
         } catch (e) {
             logger.error(`CheckCode: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next();
         }
     }
@@ -99,7 +99,7 @@ class UserController {
             return next();
         } catch (e) {
             logger.error(`logout: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next();
         }
     }
@@ -133,7 +133,7 @@ class UserController {
             return next();
         } catch (e) {
             logger.error(`refresh: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next();
         }
     }
@@ -145,7 +145,7 @@ class UserController {
             return next();
         } catch (e) {
             logger.error(`getMe: ${e}`);
-            res.status(400).json({error: true, message: e});
+            res.status(500).json({error: true, message: e});
             next();
         }
     }
