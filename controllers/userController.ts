@@ -43,13 +43,9 @@ class UserController {
 
     async checkCode(req: Request, res: Response, next: NextFunction) {
         try {
-            const {phone, code, deviceToken} = req.body;
-            if (!phone || !code) {
-                res.status(400).json({error: true, message: "phone_or_code_not_found"});
-                return next();
-            }
-            if (!deviceToken) {
-                res.status(400).json({error: true, message: "device_token_not_found"});
+            const {phone, code, deviceToken, name} = req.body;
+            if (!phone || !code || !name || !deviceToken) {
+                res.status(400).json({error: true, message: "missing_params"});
                 return next();
             }
             redis.get(phone).then(async result => {
@@ -60,7 +56,7 @@ class UserController {
                 if (result === code) {
                     let user = await DI.em.findOne(Users, {phone});
                     if (!user) {
-                        user = DI.em.create(Users, {phone, deviceToken});
+                        user = DI.em.create(Users, {phone, deviceToken, name});
                     }
                     wrap(user).assign({deviceToken});
                     await DI.em.persistAndFlush(user);
