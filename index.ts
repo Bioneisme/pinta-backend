@@ -9,7 +9,7 @@ import logger from "./config/logger";
 import express, {Application} from "express";
 import {EntityManager, MikroORM} from "@mikro-orm/core";
 import {writeDateLogging, logging} from "./middlewares/loggingMiddleware";
-import {init_cache} from "./utils/cache";
+import {init_cache, redis} from "./utils/cache";
 import authMiddleware from "./middlewares/authMiddleware";
 
 const app: Application = express();
@@ -37,4 +37,15 @@ app.listen(SERVER_PORT, async () => {
     init_cache();
 
     logger.info(`Server Started on port ${SERVER_PORT}`);
+});
+
+process.once('SIGINT', () => {
+    logger.info(`Server Stopped by SIGINT process`);
+    DI.orm.close().then(() => logger.info(`PostgreSQL was closed`));
+    redis.quit().then(() => logger.info(`Redis was closed`));
+});
+process.once('SIGTERM', () => {
+    logger.info(`Server Stopped by SIGTERM process`);
+    DI.orm.close().then(() => logger.info(`PostgreSQL was closed`));
+    redis.quit().then(() => logger.info(`Redis was closed`));
 });
