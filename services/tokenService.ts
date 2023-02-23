@@ -5,7 +5,7 @@ import {Tokens} from "../entities";
 
 class TokenService {
     generateTokens(id: number): { accessToken: string, refreshToken: string } {
-        const accessToken = jwt.sign({id}, JWT_ACCESS_SECRET, {expiresIn: '2m'}) // TODO: config
+        const accessToken = jwt.sign({id}, JWT_ACCESS_SECRET, {expiresIn: '6h'}) // TODO: config
         const refreshToken = jwt.sign({id}, JWT_REFRESH_SECRET, {expiresIn: '30d'})
         return {
             accessToken,
