@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS relationships (
 CREATE TABLE IF NOT EXISTS notes (
     id SERIAL NOT NULL PRIMARY KEY,
     sender_id integer NOT NULL,
-    receipent_id integer NOT NULL,
+    recipient_id integer NOT NULL,
     title character varying(100),
     message text,
     audio_key text,
@@ -44,5 +44,5 @@ CREATE TABLE IF NOT EXISTS notes (
     created_at character varying(50) NOT NULL,
     updated_at character varying(50) NOT NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id),
-    FOREIGN KEY (receipent_id) REFERENCES users(id)
+    FOREIGN KEY (recipient_id) REFERENCES users(id)
 );

@@ -36,7 +36,7 @@ class NoteController {
                     title,
                     recipient: recipientUser,
                     message,
-                    date: moment(date).toDate().toDateString(),
+                    date,
                     audio_key: result.Key
                 });
 
@@ -58,7 +58,7 @@ class NoteController {
             const key = req.params.key
             const readStream = awsService.getFileStream(key);
 
-            readStream.pipe(res)
+            readStream.pipe(res);
         } catch (e) {
             logger.error(`getNote: ${e}`);
             res.status(500).json({error: true, message: e});

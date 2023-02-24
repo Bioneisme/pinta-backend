@@ -8,6 +8,6 @@ const upload = multer({ dest: 'uploads/' })
 const router: Router = Router();
 
 router.post("/createNote", upload.single('audio'), noteController.createNote);
-router.get("/getNote/:keys", noteController.getNote);
+router.get("/getNote/:key", noteController.getNote);
 
 export default router;
