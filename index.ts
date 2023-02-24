@@ -27,7 +27,7 @@ app.use(cookieParser());
 app.use(writeDateLogging);
 app.use("/api/users", usersRoute);
 app.use("/api/contacts", authMiddleware, contactRoute);
-app.use("/api/notes", noteRoute);
+app.use("/api/notes", authMiddleware, noteRoute);
 app.use(logging);
 
 app.listen(SERVER_PORT, async () => {

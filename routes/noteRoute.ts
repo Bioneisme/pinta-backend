@@ -1,5 +1,4 @@
 import {Router} from "express";
-import authMiddleware from "../middlewares/authMiddleware";
 import multer from "multer";
 
 import noteController from "../controllers/noteController";

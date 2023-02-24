@@ -17,19 +17,22 @@ class NoteController {
             const file = req.file;
             const {title, message, recipient, date} = req.body;
             const user = (req as UserRequest).user;
+            if (!user) {
+                res.status(400).json({error: true, message: 'user_not_found'});
+                return next();
+            }
             if (file) {
                 const result = await awsService.uploadFile(file);
                 await unlinkFile(file.path);
 
-                const sender = await DI.em.findOne(Users, {id: user?.id});
                 const recipientUser = await DI.em.findOne(Users, {id: recipient});
-                if (!recipientUser || !sender) {
-                    res.status(400).json({error: true, message: 'sender_or_recipient_not_found'});
+                if (!recipientUser) {
+                    res.status(400).json({error: true, message: 'recipient_not_found'});
                     return next();
                 }
 
                 const note = DI.em.create(Notes, {
-                    sender,
+                    sender: user,
                     title,
                     recipient: recipientUser,
                     message,
