@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS notes (
     title character varying(100),
     message text,
     audio_key text,
+    date character varying(50) NOT NULL,
     created_at character varying(50) NOT NULL,
     updated_at character varying(50) NOT NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id),

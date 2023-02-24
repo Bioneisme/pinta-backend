@@ -11,7 +11,7 @@ export class Notes extends baseEntity {
     recipient!: Users;
 
     @Property({type: "date"})
-    date!: Date;
+    date!: string;
 
     @Property({type: "string", nullable: true})
     title: string;
@@ -22,7 +22,7 @@ export class Notes extends baseEntity {
     @Property({type: "string", nullable: true})
     audio_key: string;
 
-    constructor(sender: Users, recipient: Users, date: Date, title: string, message: string, audio_key: string) {
+    constructor(sender: Users, recipient: Users, date: string, title: string, message: string, audio_key: string) {
         super();
         this.sender = sender;
         this.recipient = recipient;

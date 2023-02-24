@@ -36,7 +36,7 @@ class NoteController {
                     title,
                     recipient: recipientUser,
                     message,
-                    date: moment(date).toDate(),
+                    date: moment(date).toDate().toDateString(),
                     audio_key: result.Key
                 });
 
