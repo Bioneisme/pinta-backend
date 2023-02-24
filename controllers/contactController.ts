@@ -12,6 +12,16 @@ class ContactController {
             const user = (req as UserRequest).user;
             const contact = await DI.em.findOne(Users, {phone});
             if (user && contact) {
+                const existingRelationship = await DI.em.findOne(Relationships, {
+                    $or: [
+                        {user1: user, user2: contact},
+                        {user1: contact, user2: user}
+                    ]
+                });
+                if (existingRelationship) {
+                    res.status(400).json({error: true, message: "relationship_already_exists"});
+                    return next();
+                }
                 const relationship = DI.em.create(Relationships, {
                     user1: user,
                     user2: contact,

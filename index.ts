@@ -11,6 +11,7 @@ import {EntityManager, MikroORM} from "@mikro-orm/core";
 import {writeDateLogging, logging} from "./middlewares/loggingMiddleware";
 import {init_cache, redis} from "./utils/cache";
 import authMiddleware from "./middlewares/authMiddleware";
+import {notesCron} from "./utils/crons";
 
 const app: Application = express();
 
@@ -35,16 +36,19 @@ app.listen(SERVER_PORT, async () => {
     DI.em = DI.orm.em.fork();
 
     init_cache();
+    notesCron.start();
 
     logger.info(`Server Started on port ${SERVER_PORT}`);
 });
 
 process.once('SIGINT', () => {
+    notesCron.stop();
     logger.info(`Server Stopped by SIGINT process`);
     DI.orm.close().then(() => logger.info(`PostgreSQL was closed`));
     redis.quit().then(() => logger.info(`Redis was closed`));
 });
 process.once('SIGTERM', () => {
+    notesCron.stop();
     logger.info(`Server Stopped by SIGTERM process`);
     DI.orm.close().then(() => logger.info(`PostgreSQL was closed`));
     redis.quit().then(() => logger.info(`Redis was closed`));

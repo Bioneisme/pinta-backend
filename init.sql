@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users
     phone character varying(20) NOT NULL,
     device_token character varying(255) NOT NULL,
     name character varying(100) NOT NULL,
+    minutes integer NOT NULL DEFAULT 180,
     created_at character varying(50),
     updated_at character varying(50)
 );
@@ -40,7 +41,9 @@ CREATE TABLE IF NOT EXISTS notes (
     title character varying(100),
     message text,
     audio_key text,
-    date character varying(50) NOT NULL,
+    date DATE NOT NULL,
+    is_notified_f boolean NOT NULL DEFAULT false,
+    is_notified_s boolean NOT NULL DEFAULT false,
     created_at character varying(50) NOT NULL,
     updated_at character varying(50) NOT NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id),

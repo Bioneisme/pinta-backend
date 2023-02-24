@@ -31,12 +31,13 @@ class NoteController {
                     return next();
                 }
 
+                const dateObj = moment(date, 'DD/MM/YYYY hh:mm').toDate();
                 const note = DI.em.create(Notes, {
                     sender: user,
                     title,
                     recipient: recipientUser,
                     message,
-                    date,
+                    date: dateObj,
                     audio_key: result.Key
                 });
 
@@ -53,14 +54,45 @@ class NoteController {
         }
     }
 
-    async getNote(req: Request, res: Response, next: NextFunction) {
+    async getAudioByKey(req: Request, res: Response, next: NextFunction) {
         try {
             const key = req.params.key
             const readStream = awsService.getFileStream(key);
 
             readStream.pipe(res);
         } catch (e) {
-            logger.error(`getNote: ${e}`);
+            logger.error(`getAudioByKey: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async getNotesToMe(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = (req as UserRequest).user;
+            const notes = await DI.em.find(Notes, {
+                recipient: user
+            }, {populate: true});
+            res.json({error: false, message: "notes_found", notes});
+            return next();
+        } catch (e) {
+            logger.error(`getNotesToMe: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async getNotesFromMe(req: Request, res: Response, next: NextFunction) {
+        try {
+            const user = (req as UserRequest).user;
+            const notes = await DI.em.find(Notes, {
+                sender: user
+            }, {populate: true});
+
+            res.json({error: false, message: "notes_found", notes});
+            return next();
+        } catch (e) {
+            logger.error(`getNotesFromMe: ${e}`);
             res.status(500).json({error: true, message: e});
             next();
         }

@@ -12,11 +12,14 @@ export class Users extends baseEntity {
     @Property({type: "string"})
     name!: string;
 
+    @Property({type: "numeric", default: 180})
+    minutes?: number;
 
-    constructor(phone: string, deviceToken: string, name: string) {
+    constructor(phone: string, deviceToken: string, name: string, minutes: number = 180) {
         super();
         this.phone = phone;
         this.deviceToken = deviceToken;
         this.name = name;
+        this.minutes = minutes;
     }
 }

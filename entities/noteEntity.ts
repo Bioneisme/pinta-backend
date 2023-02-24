@@ -11,7 +11,7 @@ export class Notes extends baseEntity {
     recipient!: Users;
 
     @Property({type: "date"})
-    date!: string;
+    date!: Date;
 
     @Property({type: "string", nullable: true})
     title: string;
@@ -22,7 +22,14 @@ export class Notes extends baseEntity {
     @Property({type: "string", nullable: true})
     audio_key: string;
 
-    constructor(sender: Users, recipient: Users, date: string, title: string, message: string, audio_key: string) {
+    @Property({type: "boolean", default: false})
+    isNotifiedF?: boolean;
+
+    @Property({type: "boolean", default: false})
+    isNotifiedS?: boolean;
+
+    constructor(sender: Users, recipient: Users, date: Date, title: string, message: string, audio_key: string,
+                isNotifiedF: boolean = false, isNotifiedS: boolean = false) {
         super();
         this.sender = sender;
         this.recipient = recipient;
@@ -30,5 +37,7 @@ export class Notes extends baseEntity {
         this.message = message;
         this.audio_key = audio_key;
         this.date = date;
+        this.isNotifiedF = isNotifiedF;
+        this.isNotifiedS = isNotifiedS;
     }
 }

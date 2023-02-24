@@ -1,0 +1,45 @@
+import logger from "../config/logger";
+import {DI} from "../index";
+import {Notes} from "../entities";
+import apnService from "./apnService";
+import moment from "moment";
+
+function isTimeToNotify(notifyDate: Date, minutes: number) {
+    const now = moment.now();
+    const diff = moment(notifyDate).utc().diff(now, 'minutes');
+    return diff <= minutes;
+}
+
+class NotificationService {
+    async findAndNotifyUsers() {
+        try {
+            const notes = await DI.em.find(Notes, {
+                $or: [
+                    {isNotifiedF: false},
+                    {isNotifiedS: false}
+                ]
+            }, {populate: true});
+            for (const note of notes) {
+                const user = note.recipient;
+                if (!note.isNotifiedF) {
+                    const minutesBeforeNotify = user.minutes || 180;
+                    if (isTimeToNotify(note.date, minutesBeforeNotify)) {
+                        note.isNotifiedF = true;
+                        await apnService.sendNotification(user.deviceToken, `Напоминаем о записи "${note.title}"`);
+                    }
+                } else if (!note.isNotifiedS) {
+                    const minutesBeforeNotify = 1;
+                    if (isTimeToNotify(note.date, minutesBeforeNotify)) {
+                        note.isNotifiedS = true;
+                        await apnService.sendNotification(user.deviceToken, `Не забудьте о записи "${note.title}"`);
+                    }
+                }
+                await DI.em.persistAndFlush(note);
+            }
+        } catch (e) {
+            logger.error(`findAndNotifyUsers: ${e}`);
+        }
+    }
+}
+
+export default new NotificationService();
