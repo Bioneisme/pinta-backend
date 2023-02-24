@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS notes (
     title character varying(100),
     message text,
     audio_key text,
-    date DATE NOT NULL,
+    date timestamp with time zone NOT NULL,
     is_notified_f boolean NOT NULL DEFAULT false,
     is_notified_s boolean NOT NULL DEFAULT false,
     created_at character varying(50) NOT NULL,

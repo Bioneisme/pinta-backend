@@ -121,7 +121,7 @@ class ContactController {
             const relationships = await DI.em.find(Relationships, {
                 $or: [{user1: user}, {user2: user}],
                 status: ContactStatus.accepted
-            });
+            }, {populate: true});
             res.json({error: false, relationships});
             return next();
         } catch (e) {
