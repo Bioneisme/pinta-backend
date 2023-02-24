@@ -43,7 +43,7 @@ class ContactController {
             const relationships = await DI.em.find(Relationships, {
                 user2: user,
                 status: ContactStatus.pending
-            });
+            }, {populate: true});
             res.json({error: false, message: "invites_found", relationships});
             return next();
         } catch (e) {
