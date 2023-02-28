@@ -6,6 +6,7 @@ import * as fs from "fs";
 import {DI} from "../index";
 import {Notes, Users} from "../entities";
 import moment from "moment";
+import "moment-timezone";
 import {UserRequest} from "../types";
 
 
@@ -34,7 +35,7 @@ class NoteController {
                     return next();
                 }
 
-                const dateObj = moment(date, 'DD/MM/YYYY hh:mm').toDate();
+                const dateObj = moment(date, 'DD/MM/YYYY hh:mm').tz('Asia/Almaty').toDate();
                 if (!dateObj) {
                     res.status(400).json({error: true, message: 'date_not_found_or_incorrect_format'});
                     return next();
