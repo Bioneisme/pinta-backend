@@ -4,10 +4,9 @@ import {Notes} from "../entities";
 import apnService from "./apnService";
 import moment from "moment";
 
-function isTimeToNotify(notifyDate: Date, minutes: number) {
+function isTimeToNotify(notifyDate: Date) {
     const now = moment.now();
-    const diff = moment(notifyDate).utc().diff(now, 'minutes');
-    return diff <= minutes;
+    return moment(notifyDate).utc().diff(now, 'minutes');
 }
 
 class NotificationService {
@@ -21,16 +20,19 @@ class NotificationService {
             }, {populate: true});
             for (const note of notes) {
                 const user = note.recipient;
+                const timeToNotify = isTimeToNotify(note.date);
                 if (!note.isNotifiedF) {
                     const minutesBeforeNotify = user.minutes || 180;
-                    if (isTimeToNotify(note.date, minutesBeforeNotify)) {
+                    if (timeToNotify < minutesBeforeNotify) {
                         note.isNotifiedF = true;
+                        logger.info(`First user notification. \nNote: ${note.id}. ${note.title} \nPhone: ${user.phone}\nDevice Token: ${user.deviceToken}\nMinutes before notify: ${minutesBeforeNotify}\nMinutes left: ${timeToNotify}`);
                         await apnService.sendNotification(user.deviceToken, `Напоминаем о записи "${note.title}"`);
                     }
                 } else if (!note.isNotifiedS) {
                     const minutesBeforeNotify = 1;
-                    if (isTimeToNotify(note.date, minutesBeforeNotify)) {
+                    if (timeToNotify < minutesBeforeNotify) {
                         note.isNotifiedS = true;
+                        logger.info(`Second user notification. \nNote: ${note.id}. ${note.title} \nPhone: ${user.phone}\nDevice Token: ${user.deviceToken}\nMinutes before notify: ${minutesBeforeNotify}\nMinutes left: ${timeToNotify}`);
                         await apnService.sendNotification(user.deviceToken, `Не забудьте о записи "${note.title}"`);
                     }
                 }

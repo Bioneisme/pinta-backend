@@ -1,6 +1,7 @@
 import apn from "apn";
 import {APN} from "../config/settings";
 import * as fs from "fs";
+import logger from "../config/logger";
 
 const options = {
     token: {
@@ -24,6 +25,7 @@ class ApnService {
         }), deviceToken).then((result) => {
             return {error: false, result};
         }).catch(e => {
+            logger.error(`sendNotification: ${e}`);
             return {error: true, message: e};
         })
     }

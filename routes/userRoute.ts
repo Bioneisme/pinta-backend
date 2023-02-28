@@ -7,6 +7,7 @@ import adminController from "../controllers/adminController";
 const router: Router = Router();
 
 router.get("/getMe", authMiddleware, userController.getMe);
+router.patch("/changeNotifyMinutes", authMiddleware, userController.changeNotifyMinutes);
 router.post("/sendCode", userController.sendCode);
 router.post("/checkCode", userController.checkCode);
 router.get("/logout", userController.logout);

@@ -145,6 +145,29 @@ class UserController {
             next();
         }
     }
+
+    async changeNotifyMinutes(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {user} = req as UserRequest;
+            if (!user) {
+                res.status(401).json({error: true, message: "unauthorized"});
+                return next();
+            }
+            const {minutes} = req.body;
+            if (!minutes) {
+                res.status(400).json({error: true, message: "minutes_not_found"});
+                return next();
+            }
+            wrap(user).assign({minutes});
+            await DI.em.persistAndFlush(user);
+            res.json({error: false, message: "change_notify_minutes_success", user});
+            return next();
+        } catch (e) {
+            logger.error(`changeNotifyMinutes: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
 }
 
 export default new UserController();

@@ -16,6 +16,10 @@ class NoteController {
         try {
             const file = req.file;
             const {title, message, recipient, date} = req.body;
+            if (!title || !date) {
+                res.status(400).json({error: true, message: 'title_or_date_not_found'});
+                return next();
+            }
             const user = (req as UserRequest).user;
             if (!user) {
                 res.status(400).json({error: true, message: 'user_not_found'});
@@ -24,7 +28,6 @@ class NoteController {
             if (file) {
                 const result = await awsService.uploadFile(file);
                 await unlinkFile(file.path);
-
                 const recipientUser = await DI.em.findOne(Users, {id: recipient});
                 if (!recipientUser) {
                     res.status(400).json({error: true, message: 'recipient_not_found'});
@@ -32,6 +35,10 @@ class NoteController {
                 }
 
                 const dateObj = moment(date, 'DD/MM/YYYY hh:mm').toDate();
+                if (!dateObj) {
+                    res.status(400).json({error: true, message: 'date_not_found_or_incorrect_format'});
+                    return next();
+                }
                 const note = DI.em.create(Notes, {
                     sender: user,
                     title,
