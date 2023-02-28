@@ -5,8 +5,8 @@ import apnService from "./apnService";
 import moment from "moment";
 
 function isTimeToNotify(notifyDate: Date) {
-    const now = moment.now();
-    return moment(notifyDate).utc().diff(now, 'minutes');
+    const now = moment();
+    return moment(notifyDate).diff(now, 'minutes') - 6 * 60;
 }
 
 class NotificationService {
@@ -21,6 +21,7 @@ class NotificationService {
             for (const note of notes) {
                 const user = note.recipient;
                 const timeToNotify = isTimeToNotify(note.date);
+                console.log(`${note.id} ${note.title} ${timeToNotify}`)
                 if (!note.isNotifiedF) {
                     const minutesBeforeNotify = user.minutes || 180;
                     if (timeToNotify < minutesBeforeNotify) {
