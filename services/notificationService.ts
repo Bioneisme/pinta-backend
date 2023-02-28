@@ -21,7 +21,6 @@ class NotificationService {
             for (const note of notes) {
                 const user = note.recipient;
                 const timeToNotify = isTimeToNotify(note.date);
-                console.log(`${note.id} ${note.title} ${timeToNotify}`)
                 if (!note.isNotifiedF) {
                     const minutesBeforeNotify = user.minutes || 180;
                     if (timeToNotify < minutesBeforeNotify) {
