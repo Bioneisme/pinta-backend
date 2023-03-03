@@ -6,7 +6,7 @@ import moment from "moment";
 
 function isTimeToNotify(notifyDate: Date) {
     const now = moment();
-    return moment(notifyDate).diff(now, 'minutes') - 6 * 60;
+    return moment(notifyDate).diff(now, 'minutes');
 }
 
 class NotificationService {
