@@ -8,7 +8,7 @@ import {config} from "./config/mikro-orm";
 import logger from "./config/logger";
 import express, {Application} from "express";
 import {EntityManager, MikroORM} from "@mikro-orm/core";
-import {writeDateLogging, logging} from "./middlewares/loggingMiddleware";
+import {logging} from "./middlewares/loggingMiddleware";
 import {init_cache, redis} from "./utils/cache";
 import authMiddleware from "./middlewares/authMiddleware";
 import {notesCron} from "./utils/crons";
@@ -25,11 +25,10 @@ app.use(cors({
     credentials: true
 }));
 app.use(cookieParser());
-app.use(writeDateLogging);
+app.use(logging);
 app.use("/api/users", usersRoute);
 app.use("/api/contacts", authMiddleware, contactRoute);
 app.use("/api/notes", authMiddleware, noteRoute);
-app.use(logging);
 
 app.listen(SERVER_PORT, async () => {
     DI.orm = await MikroORM.init(config);

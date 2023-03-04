@@ -4,7 +4,6 @@ import {Response, Request, NextFunction} from "express";
 import {Users} from "../entities";
 import {UserRequest} from "../types";
 import tokenService from "../services/tokenService";
-import {logging} from "./loggingMiddleware";
 
 
 export default async function (req: Request, res: Response, next: NextFunction) {
@@ -26,17 +25,17 @@ export default async function (req: Request, res: Response, next: NextFunction) 
                 next();
             } else {
                 res.status(400).json({error: true, message: "invalid_token"});
-                return logging(req, res, next);
+                return;
             }
         } catch (e) {
             res.status(400).json({error: true, message: "invalid_token"});
             logger.error(`Invalid Token: ${e}`);
-            return logging(req, res, next);
+            return;
         }
     }
 
     if (!token) {
         res.status(401).json({error: true, message: "unauthorized"});
-        return logging(req, res, next);
+        return;
     }
 }

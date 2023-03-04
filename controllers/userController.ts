@@ -12,12 +12,12 @@ import tokenService from "../services/tokenService";
 import {wrap} from "@mikro-orm/core";
 
 class UserController {
-    async sendCode(req: Request, res: Response, next: NextFunction) {
+    async sendCode(req: Request, res: Response) {
         try {
             const {phone} = req.body;
             if (!phone) {
                 res.status(400).json({error: true, message: "phone_not_found"});
-                return next();
+                return;
             }
             const code = generateRandomCode(1000, 9999);
 
@@ -29,29 +29,28 @@ class UserController {
             }).then(() => {
                 res.json({error: false, message: "code_sent"});
                 redis.setEx(phone, EXPIRY_TIME, code.toString());
-                return next();
+                return;
             }).catch(e => {
                 res.status(400).json({error: true, message: e});
-                return next();
+                return;
             });
         } catch (e) {
             logger.error(`SendCode: ${e}`);
             res.status(500).json({error: true, message: e});
-            next();
         }
     }
 
-    async checkCode(req: Request, res: Response, next: NextFunction) {
+    async checkCode(req: Request, res: Response) {
         try {
             const {phone, code, deviceToken, name} = req.body;
             if (!phone || !code || !name || !deviceToken) {
                 res.status(400).json({error: true, message: "missing_params"});
-                return next();
+                return;
             }
             redis.get(phone).then(async result => {
                 if (!result) {
                     res.status(400).json({error: true, message: "code_not_found_or_expired"});
-                    return next();
+                    return;
                 }
                 if (result === code) {
                     let user = await DI.em.findOne(Users, {phone});
@@ -70,48 +69,46 @@ class UserController {
                     });
                     res.json({error: false, message: "code_valid", ...tokens, user});
                     await redis.del(phone);
-                    return next();
+                    return;
                 }
 
                 res.status(400).json({error: true, message: "code_invalid"});
-                return next()
+                return;
             }).catch(e => {
                 res.status(400).json({error: true, message: e});
-                return next();
+                return;
             });
         } catch (e) {
             logger.error(`CheckCode: ${e}`);
             res.status(500).json({error: true, message: e});
-            next();
         }
     }
 
-    async logout(req: Request, res: Response, next: NextFunction) {
+    async logout(req: Request, res: Response) {
         try {
             const {refreshToken} = req.cookies;
             await tokenService.removeToken(refreshToken);
             res.clearCookie("refreshToken");
             res.json({error: false, message: "logout_success"});
-            return next();
+            return;
         } catch (e) {
             logger.error(`logout: ${e}`);
             res.status(500).json({error: true, message: e});
-            next();
         }
     }
 
-    async refresh(req: Request, res: Response, next: NextFunction) {
+    async refresh(req: Request, res: Response) {
         try {
             const {refreshToken} = req.cookies;
             if (!refreshToken) {
                 res.status(401).json({error: true, message: "unauthorized"});
-                return next();
+                return;
             }
             const userData: any = tokenService.verifyRefreshToken(refreshToken);
             const token = await DI.em.findOne(Tokens, {token: refreshToken});
             if (!token || !userData) {
                 res.status(401).json({error: true, message: "unauthorized"});
-                return next();
+                return;
             }
             const user = await DI.em.findOne(Users, {id: userData.id});
             if (user) {
@@ -122,50 +119,46 @@ class UserController {
                     httpOnly: true
                 });
                 res.json({error: false, message: "refresh_success", ...tokens, user});
-                return next();
+                return;
             }
 
             res.status(401).json({error: true, message: "unauthorized"});
-            return next();
+            return;
         } catch (e) {
             logger.error(`refresh: ${e}`);
             res.status(500).json({error: true, message: e});
-            next();
         }
     }
 
-    async getMe(req: Request, res: Response, next: NextFunction) {
+    async getMe(req: Request, res: Response) {
         try {
             const {user} = req as UserRequest;
             res.json({error: false, message: "get_me_success", user});
-            return next();
         } catch (e) {
             logger.error(`getMe: ${e}`);
             res.status(500).json({error: true, message: e});
-            next();
         }
     }
 
-    async changeNotifyMinutes(req: Request, res: Response, next: NextFunction) {
+    async changeNotifyMinutes(req: Request, res: Response) {
         try {
             const {user} = req as UserRequest;
             if (!user) {
                 res.status(401).json({error: true, message: "unauthorized"});
-                return next();
+                return;
             }
             const {minutes} = req.body;
             if (!minutes) {
                 res.status(400).json({error: true, message: "minutes_not_found"});
-                return next();
+                return;
             }
             wrap(user).assign({minutes});
             await DI.em.persistAndFlush(user);
             res.json({error: false, message: "change_notify_minutes_success", user});
-            return next();
+            return;
         } catch (e) {
             logger.error(`changeNotifyMinutes: ${e}`);
             res.status(500).json({error: true, message: e});
-            next();
         }
     }
 }
